@@ -13,6 +13,12 @@ const useSimulationStore = create((set, get) => ({
   // --- State Gaya ---
   forceVector: { magnitude: 0, unit: 'N' },
 
+  // --- State Player ---
+  playerName: '',
+  selectedStage: null,
+
+  setPlayer: (name, stage) => set({ playerName: name, selectedStage: stage }),
+
   // --- State Monitoring ---
   lastInteractionAt: Date.now(),
   currentHint: null,

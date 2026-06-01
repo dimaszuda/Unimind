@@ -5,6 +5,7 @@ import HowToPlayPage from '@/pages/HowToPlayPage'
 import LabPage from '@/pages/LabPage'
 import ChatPage from '@/pages/ChatPage'
 import PemilihanKonsep from '@/pages/PemilihanKonsep'
+import Tujuan from '@/pages/TujuanPembelajaran'
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/how-to-play" element={<HowToPlayPage />} />
       <Route path="/pemilihan" element={<PemilihanKonsep />} />
+      <Route path="/tujuan" element={<Tujuan />} />
       <Route path="/lab" element={<LabPage />} />
       <Route path="/chat" element={<ChatPage />} />
     </Routes>
