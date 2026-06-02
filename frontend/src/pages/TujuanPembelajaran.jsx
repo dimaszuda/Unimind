@@ -55,7 +55,7 @@ export default function Tujuan() {
                 </ol>
             </div>
             <div className="absolute bottom-16 right-48">
-                <Link to="/lab">
+                <Link to="/level-one">
                     <img
                         src="assets/Button_Lanjutkan.png"
                         alt="Tombol Lanjutkan"
