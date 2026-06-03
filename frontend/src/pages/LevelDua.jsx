@@ -1,14 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
-import { useLevelOneStore } from '@/store/levelOneStore'
+import { useLevelTwoStore } from '@/store/levelTwoStore'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
+// Format force value to fit the small display box
+function formatForce(v) {
+  if (v === null || v === undefined) return '—'
+  if (Math.abs(v) >= 10000 || (Math.abs(v) < 0.01 && v !== 0)) return v.toExponential(2)
+  return v.toFixed(2)
+}
+
 export default function LevelDua() {
   const {
-    selectedCharge, bolaState, statifState,
+    sliderValue, bolaCharge, statifCharge,
+    bolaState, statifState,
     laserDirection, laserActive, isProcessing,
-    selectCharge, applyShootResult, setProcessing,
-  } = useLevelOneStore()
+    forceValue,
+    setSlider, applyShootResult, setProcessing,
+  } = useLevelTwoStore()
 
   const [studentId] = useState(() => {
     const existing = sessionStorage.getItem('student_id')
@@ -26,11 +35,12 @@ export default function LevelDua() {
 
   // Always-fresh snapshot so the stable event handlers never read stale closures
   const latestRef = useRef({})
-  latestRef.current = { selectedCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing }
+  latestRef.current = { sliderValue, bolaCharge, statifCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing }
 
-  const launcherSrc = selectedCharge === 'Positif'
+  // Launcher image driven by slider sign
+  const launcherSrc = sliderValue > 0
     ? '/assets/Tool_PenembakMuatanPositif.png'
-    : selectedCharge === 'Negatif'
+    : sliderValue < 0
     ? '/assets/Tool_PenembakMuatanNegatif.png'
     : '/assets/Tool_PenembakMuatanNetral.png'
 
@@ -53,8 +63,11 @@ export default function LevelDua() {
     transition: 'transform 0.6s ease',
   }
 
+  // Thumb offset for custom slider visual: -10..+10 maps to ±60px from centre
+  const thumbOffset = (sliderValue / 10) * 60
+
   const handleLauncherMouseDown = (e) => {
-    if (!latestRef.current.selectedCharge || latestRef.current.isProcessing) return
+    if (latestRef.current.sliderValue === 0 || latestRef.current.isProcessing) return
     e.preventDefault()
     isDraggingRef.current = true
     setIsDragging(true)
@@ -72,8 +85,8 @@ export default function LevelDua() {
       isDraggingRef.current = false
       setIsDragging(false)
 
-      const { selectedCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing } = latestRef.current
-      if (!selectedCharge || isProcessing) return
+      const { sliderValue, bolaCharge, statifCharge, isProcessing, studentId, applyShootResult, setProcessing } = latestRef.current
+      if (sliderValue === 0 || isProcessing) return
 
       const { clientX, clientY } = e
       const isHit = (ref) => {
@@ -89,15 +102,15 @@ export default function LevelDua() {
 
       setProcessing(true)
       try {
-        const res = await fetch(`${API_BASE}/level-one/shoot`, {
+        const res = await fetch(`${API_BASE}/level-two/shoot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             student_id: studentId,
-            launcher_charge: selectedCharge,
+            launcher_charge: sliderValue,
             target,
-            current_bola_state: bolaState,
-            current_statif_state: statifState,
+            current_bola_charge: bolaCharge,
+            current_statif_charge: statifCharge,
           }),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -204,17 +217,17 @@ export default function LevelDua() {
           />
         </div>
 
-        {/* Navigation bar with launcher and charge selector */}
+        {/* Navigation bar with launcher, slider, and read-only data display */}
         <div className='relative flex items-center justify-center'>
           <img
-            src="/assets/NavigationBar.png"
+            src="/assets/NavigationBarTahap2.png"
             alt="navigation"
             width={172}
             className='relative z-0 mr-32'
           />
-          <div className='absolute z-10 flex flex-col items-center justify-center gap-4 mt-5 mr-32'>
-            <div className='flex items-center justify-center gap-1'>
-              {/* Launcher — drag this onto bola or statif */}
+          <div className='absolute z-10 flex flex-col items-center justify-center gap-4 mt-8 mr-32'>
+            {/* Launcher + charge value side by side */}
+            <div className='flex items-center gap-1'>
               <img
                 src={launcherSrc}
                 alt="penembak muatan"
@@ -222,50 +235,85 @@ export default function LevelDua() {
                 draggable="false"
                 onMouseDown={handleLauncherMouseDown}
                 style={{
-                  cursor: selectedCharge && !isProcessing ? 'grab' : 'default',
+                  cursor: sliderValue !== 0 && !isProcessing ? 'grab' : 'default',
                   opacity: isProcessing ? 0.6 : 1,
                 }}
               />
-              {/* Muatan Positif selector */}
-              <img
-                src="/assets/Tool_MuatanPositif.png"
-                alt="muatan positif"
-                width={20}
-                className='h-auto'
-                onClick={() => selectCharge('Positif')}
-                style={{
-                  cursor: 'pointer',
-                  outline: selectedCharge === 'Positif' ? '2px solid #ef4444' : 'none',
-                  borderRadius: '50%',
-                }}
-              />
-              {/* Muatan Negatif selector */}
-              <img
-                src="/assets/Tool_MuatanNegatif.png"
-                alt="muatan negatif"
-                width={20}
-                className='h-auto'
-                onClick={() => selectCharge('Negatif')}
-                style={{
-                  cursor: 'pointer',
-                  outline: selectedCharge === 'Negatif' ? '2px solid #3b82f6' : 'none',
-                  borderRadius: '50%',
-                }}
-              />
+              <div className="flex bg-white w-10 h-6 border-2 border-sky-500 rounded-md items-center justify-center gap-0.5">
+                <p className='font-bold text-black text-xs'>
+                  {sliderValue > 0 ? `+${sliderValue}` : sliderValue}
+                </p>
+                <p className='font-bold text-black text-xs'>&mu;C</p>
+              </div>
             </div>
+
+            {/* Interactive slider — overlays a transparent range input on the image */}
             <div className='relative flex items-center justify-center'>
               <img
                 src="/assets/Tool_Slider.png"
                 alt="tool slider"
                 width={144}
                 className='h-auto'
+                style={{ pointerEvents: 'none' }}
               />
+              {/* Thumb image tracks slider value */}
               <img
                 src="/assets/Button_SliderTool.png"
-                alt="slider"
+                alt="slider thumb"
                 width={8}
                 className='absolute'
+                style={{
+                  left: `calc(50% + ${thumbOffset}px)`,
+                  transform: 'translateX(-50%)',
+                  pointerEvents: 'none',
+                }}
               />
+              {/* Invisible range input captures user interaction */}
+              <input
+                type="range"
+                min={-10}
+                max={10}
+                step={1}
+                value={sliderValue}
+                onChange={(e) => setSlider(Number(e.target.value))}
+                className='absolute cursor-pointer'
+                style={{ width: '144px', opacity: 0, height: '24px', margin: 0 }}
+              />
+            </div>
+
+            {/* Read-only data display */}
+            <div className='relative flex flex-col gap-2'>
+              <div className='relative flex gap-2'>
+                <div className="flex bg-white w-16 h-6 border-2 border-sky-500 rounded-md items-center justify-center">
+                  <p className='font-bold text-black text-xs'>Muatan 1</p>
+                </div>
+                <div className="flex bg-white w-16 h-6 border-2 border-sky-500 rounded-md items-center justify-center gap-0.5">
+                  <p className='font-bold text-black text-xs'>
+                    {statifCharge !== 0 ? (statifCharge > 0 ? `+${statifCharge}` : statifCharge) : '—'}
+                  </p>
+                  {statifCharge !== 0 && <p className='font-bold text-black text-xs'>&mu;C</p>}
+                </div>
+              </div>
+              <div className='relative flex gap-2'>
+                <div className="flex bg-white w-16 h-6 border-2 border-sky-500 rounded-md items-center justify-center">
+                  <p className='font-bold text-black text-xs'>Muatan 2</p>
+                </div>
+                <div className="flex bg-white w-16 h-6 border-2 border-sky-500 rounded-md items-center justify-center gap-0.5">
+                  <p className='font-bold text-black text-xs'>
+                    {bolaCharge !== 0 ? (bolaCharge > 0 ? `+${bolaCharge}` : bolaCharge) : '—'}
+                  </p>
+                  {bolaCharge !== 0 && <p className='font-bold text-black text-xs'>&mu;C</p>}
+                </div>
+              </div>
+              <div className='relative flex gap-2'>
+                <div className="flex bg-white w-16 h-6 border-2 border-sky-500 rounded-md items-center justify-center">
+                  <p className='font-bold text-black text-xs'>Gaya F</p>
+                </div>
+                <div className="flex bg-white w-16 h-6 border-2 border-sky-500 rounded-md items-center justify-center gap-0.5">
+                  <p className='font-bold text-black text-xs'>{formatForce(forceValue)}</p>
+                  {forceValue !== null && <p className='font-bold text-black text-xs'>N</p>}
+                </div>
+              </div>
             </div>
           </div>
         </div>
