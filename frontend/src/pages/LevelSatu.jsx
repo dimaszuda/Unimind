@@ -150,7 +150,21 @@ export default function LevelSatu() {
       >
         {/* Timi Bot panel */}
         <div className='flex flex-col relative items-center justify-center mt-24 mr-48'>
-          <div className='w-60 h-80 bg-gray-500/15 border-2 rounded-2xl border-white ml-20'></div>
+          <div className="flex justify-center items-end w-80 h-80 bg-gray-500/15 border-2 rounded-2xl border-white ml-20">
+            <div className="relative mb-4">
+              <textarea
+                className="w-72 h-28 p-3 bg-white border-2 border-black rounded-2xl resize-none text-black"
+                placeholder="Tulis pesan..."
+              />
+              <button className="absolute bottom-4 right-3">
+                <img
+                  src="/assets/paper-plane.png"
+                  alt="send chat"
+                  width={24}
+                />
+              </button>
+            </div>
+          </div>
           <img
             src="/assets/Image_Robot.png"
             alt="Timi Bot"
@@ -171,7 +185,7 @@ export default function LevelSatu() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '19rem' }}>
+        <div className='flex flex-col relative items-center justify-center -ml-44' style={{ marginTop: '24.5rem' }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -188,7 +202,7 @@ export default function LevelSatu() {
         </div>
 
         {/* Bola (drop target) */}
-        <div className='relative flex items-center justify-center mt-2 ml-10'>
+        <div className='relative flex items-center justify-center mt-24 ml-10'>
           <img
             src="/assets/Tool_PenggantungBola.png"
             alt="penggantung bola"

@@ -8,10 +8,12 @@ load_dotenv()
 
 router = APIRouter()
 
-supabase = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_KEY"),
-)
+def _get_supabase():
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_SERVICE_KEY")
+    if not url or not key:
+        raise HTTPException(status_code=503, detail="Supabase not configured")
+    return create_client(url, key)
 
 
 class SessionLog(BaseModel):
@@ -28,6 +30,7 @@ async def log_session(payload: SessionLog):
             "time_spent_seconds": payload.time_spent_seconds,
             "chat_history": payload.chat_history,
         }
+        supabase = _get_supabase()
         supabase.table("session_logs").insert(data).execute()
         return {"status": "logged"}
     except Exception as e:

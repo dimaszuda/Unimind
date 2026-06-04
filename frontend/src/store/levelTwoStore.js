@@ -8,6 +8,7 @@ export const useLevelTwoStore = create((set) => ({
   statifState: 'Netral', // 'Netral' | 'Positif' | 'Negatif'
   laserDirection: null,  // null | 'left' | 'right'
   laserActive: false,
+  laserDistance: null,   // number (px) | null — movement distance from backend (|F| / 10)
   isProcessing: false,
   forceValue: null,      // number (N) | null — only set after both objects are charged
 
@@ -20,8 +21,10 @@ export const useLevelTwoStore = create((set) => ({
     statifState: result.new_statif_state,
     laserDirection: result.laser_direction,
     laserActive: result.laser_active,
+    laserDistance: result.laser_distance,
     forceValue: result.force_value,
   }),
 
   setProcessing: (value) => set({ isProcessing: value }),
+  setForceValue: (value) => set({ forceValue: value }),
 }))

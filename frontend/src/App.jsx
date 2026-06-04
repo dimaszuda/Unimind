@@ -4,6 +4,7 @@ import AboutPage from '@/pages/AboutPage'
 import HowToPlayPage from '@/pages/HowToPlayPage'
 import LevelSatu from '@/pages/LevelSatu'
 import LevelDua from '@/pages/LevelDua'
+import LevelTiga from '@/pages/LevelTiga'
 import ChatPage from '@/pages/ChatPage'
 import PemilihanKonsep from '@/pages/PemilihanKonsep'
 import Tujuan from '@/pages/TujuanPembelajaran'
@@ -18,6 +19,7 @@ export default function App() {
       <Route path="/tujuan" element={<Tujuan />} />
       <Route path="/level-one" element={<LevelSatu />} />
       <Route path="/level-two" element={<LevelDua />} />
+      <Route path="/level-three" element={<LevelTiga />} />
       <Route path="/chat" element={<ChatPage />} />
     </Routes>
   )

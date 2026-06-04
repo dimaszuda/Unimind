@@ -9,15 +9,18 @@ function formatForce(v) {
   return String(Math.round(v))
 }
 
-export default function LevelDua() {
+export default function LevelTiga() {
   const {
     sliderValue, bolaCharge, statifCharge,
     bolaState, statifState,
     laserDirection, laserActive, isProcessing,
     laserDistance,
     forceValue,
-    setSlider, applyShootResult, setProcessing,
+    setSlider, applyShootResult, setProcessing, setForceValue,
   } = useLevelTwoStore()
+
+  // Distance between charges: 1–10 cm, slider starts at left (1 cm)
+  const [distanceValue, setDistanceValue] = useState(1)
 
   const [studentId] = useState(() => {
     const existing = sessionStorage.getItem('student_id')
@@ -35,7 +38,7 @@ export default function LevelDua() {
 
   // Always-fresh snapshot so the stable event handlers never read stale closures
   const latestRef = useRef({})
-  latestRef.current = { sliderValue, bolaCharge, statifCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing }
+  latestRef.current = { sliderValue, bolaCharge, statifCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing, distanceValue }
 
   // Launcher image driven by slider sign
   const launcherSrc = sliderValue > 0
@@ -68,6 +71,12 @@ export default function LevelDua() {
   // Thumb offset for custom slider visual: -10..+10 maps to ±60px from centre
   const thumbOffset = (sliderValue / 10) * 60
 
+  // Distance slider thumb: 1..10 maps to -60..+60px from centre
+  const distanceThumbOffset = ((distanceValue - 1) / 9) * 120 - 60
+
+  // Statif horizontal offset: distance=1 → rightmost (+90px), distance=10 → 0px
+  const statifTranslateX = (10 - distanceValue) * 16
+
   const handleLauncherMouseDown = (e) => {
     if (latestRef.current.sliderValue === 0 || latestRef.current.isProcessing) return
     e.preventDefault()
@@ -87,7 +96,7 @@ export default function LevelDua() {
       isDraggingRef.current = false
       setIsDragging(false)
 
-      const { sliderValue, bolaCharge, statifCharge, isProcessing, studentId, applyShootResult, setProcessing } = latestRef.current
+      const { sliderValue, bolaCharge, statifCharge, isProcessing, studentId, applyShootResult, setProcessing, distanceValue } = latestRef.current
       if (sliderValue === 0 || isProcessing) return
 
       const { clientX, clientY } = e
@@ -104,7 +113,7 @@ export default function LevelDua() {
 
       setProcessing(true)
       try {
-        const res = await fetch(`${API_BASE}/level-two/shoot`, {
+        const res = await fetch(`${API_BASE}/level-three/shoot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -113,6 +122,7 @@ export default function LevelDua() {
             target,
             current_bola_charge: bolaCharge,
             current_statif_charge: statifCharge,
+            distance_cm: distanceValue,
           }),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -131,6 +141,24 @@ export default function LevelDua() {
       window.removeEventListener('mouseup', onMouseUp)
     }
   }, []) // empty deps — stable forever, reads via latestRef
+
+  // Recalculate force whenever distance changes (if both charges are set)
+  useEffect(() => {
+    if (bolaCharge === 0 || statifCharge === 0) {
+      setForceValue(null)
+      return
+    }
+    let cancelled = false
+    fetch(`${API_BASE}/level-three/force`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ distance_cm: distanceValue, q1: statifCharge, q2: bolaCharge }),
+    })
+      .then((r) => r.json())
+      .then((data) => { if (!cancelled) setForceValue(data.force_value) })
+      .catch((err) => console.error('Force calc error:', err))
+    return () => { cancelled = true }
+  }, [distanceValue, bolaCharge, statifCharge]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -200,7 +228,7 @@ export default function LevelDua() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '24.5rem' }}>
+        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '27rem' }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -212,12 +240,60 @@ export default function LevelDua() {
             src={statifSrc}
             alt="tool statif"
             width={200}
-            className='z-10 -mt-56 ml-20'
+            className='z-0 -mt-56 mr-[124px]'
+            style={{ transform: `translateX(${statifTranslateX}px)` }}
           />
+          
+          <div className="flex flex-col items-center justify-center mt-4 mr-36 w-48 h-16 bg-white/50 border border-white rounded-2xl gap-3">
+            <div className="flex items-center justify-center gap-2">
+              <div className="flex w-20 h-6 bg-white border-2 border-blue-500 rounded-lg items-center justify-center">
+                <p className="font-semibold text-black text-xs">Jarak (s)</p>
+              </div>
+              <div className="flex bg-white w-16 h-6 border-2 border-sky-500 rounded-md items-center justify-center gap-2">
+                <p className='font-bold text-black text-xs'>
+                  {distanceValue}
+                </p>
+                <p className='font-bold text-black text-xs'>Cm</p>
+              </div>
+            </div>
+
+            <div className='relative flex items-center justify-center'>
+              <img
+                src="/assets/Tool_Slider.png"
+                alt="tool slider"
+                width={144}
+                className='h-auto'
+                style={{ pointerEvents: 'none' }}
+              />
+              {/* Thumb image tracks distance slider value */}
+              <img
+                src="/assets/Button_SliderTool.png"
+                alt="slider thumb"
+                width={8}
+                className='absolute'
+                style={{
+                  left: `calc(50% + ${distanceThumbOffset}px)`,
+                  transform: 'translateX(-50%)',
+                  pointerEvents: 'none',
+                }}
+              />
+              {/* Invisible range input for distance: 1–10 cm, starts at left */}
+              <input
+                type="range"
+                min={1}
+                max={10}
+                step={1}
+                value={distanceValue}
+                onChange={(e) => setDistanceValue(Number(e.target.value))}
+                className='absolute cursor-pointer'
+                style={{ width: '144px', opacity: 0, height: '24px', margin: 0 }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Bola (drop target) */}
-        <div className='relative flex items-center justify-center mt-24 ml-10'>
+        <div className='relative flex items-center justify-center mt-[52px] ml-10'>
           <img
             src="/assets/Tool_PenggantungBola.png"
             alt="penggantung bola"
