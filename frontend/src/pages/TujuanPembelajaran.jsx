@@ -19,6 +19,23 @@ const contentStyle = {
 
 export default function Tujuan() {
     const selectedStage = useSimulationStore((s) => s.selectedStage);
+    let level;
+    switch(selectedStage) {
+        case 1:
+            level = "/level-one";
+            break;
+        case 2:
+            level = "/level-two";
+            break;
+        case 3:
+            level = "/level-three";
+            break;
+        case 4:
+            level = "/level-three";
+            break;
+        default:
+            level = "/level-one";
+    }
 
     return (
         <div
@@ -55,7 +72,7 @@ export default function Tujuan() {
                 </ol>
             </div>
             <div className="absolute bottom-16 right-48">
-                <Link to="/level-one">
+                <Link to={level}>
                     <img
                         src="assets/Button_Lanjutkan.png"
                         alt="Tombol Lanjutkan"
