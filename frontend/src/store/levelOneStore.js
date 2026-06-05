@@ -1,12 +1,16 @@
 import { create } from 'zustand'
 
-export const useLevelOneStore = create((set) => ({
-  selectedCharge: null,   // null | 'Positif' | 'Negatif'
-  bolaState: 'Netral',    // 'Netral' | 'Positif' | 'Negatif'
-  statifState: 'Netral',  // 'Netral' | 'Positif' | 'Negatif'
-  laserDirection: null,   // null | 'left' | 'right'
+const initialLevelOneState = {
+  selectedCharge: null,
+  bolaState: 'Netral',
+  statifState: 'Netral',
+  laserDirection: null,
   laserActive: false,
   isProcessing: false,
+}
+
+export const useLevelOneStore = create((set) => ({
+  ...initialLevelOneState,
 
   selectCharge: (charge) => set({ selectedCharge: charge }),
 
@@ -18,4 +22,5 @@ export const useLevelOneStore = create((set) => ({
   }),
 
   setProcessing: (value) => set({ isProcessing: value }),
+  resetLevelOne: () => set({ ...initialLevelOneState }),
 }))

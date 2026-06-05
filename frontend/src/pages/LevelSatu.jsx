@@ -7,7 +7,7 @@ export default function LevelSatu() {
   const {
     selectedCharge, bolaState, statifState,
     laserDirection, laserActive, isProcessing,
-    selectCharge, applyShootResult, setProcessing,
+    selectCharge, applyShootResult, setProcessing, resetLevelOne,
   } = useLevelOneStore()
 
   const [studentId] = useState(() => {
@@ -23,6 +23,8 @@ export default function LevelSatu() {
   const isDraggingRef = useRef(false)
   const [isDragging, setIsDragging] = useState(false)
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 })
+  const [directionSign, setDirectionSign] = useState(null)
+  const [isSignBlinking, setIsSignBlinking] = useState(false)
 
   // Always-fresh snapshot so the stable event handlers never read stale closures
   const latestRef = useRef({})
@@ -50,8 +52,14 @@ export default function LevelSatu() {
     transform: laserActive
       ? (laserDirection === 'right' ? 'translateX(90px)' : 'translateX(-90px)')
       : 'translateX(0)',
-    transition: 'transform 0.6s ease',
+    transition: 'transform 5s ease',
   }
+
+  const moveSignSrc = directionSign === 'right'
+    ? '/assets/move_right.png'
+    : '/assets/move_left.png'
+
+  const signPositionClass = directionSign === 'right' ? 'right-4' : 'left-24'
 
   const handleLauncherMouseDown = (e) => {
     if (!latestRef.current.selectedCharge || latestRef.current.isProcessing) return
@@ -59,6 +67,14 @@ export default function LevelSatu() {
     isDraggingRef.current = true
     setIsDragging(true)
     setDragPos({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleReset = () => {
+    isDraggingRef.current = false
+    setIsDragging(false)
+    setDirectionSign(null)
+    setIsSignBlinking(false)
+    resetLevelOne()
   }
 
   // Register mouse listeners ONCE — read all state via latestRef (never stale)
@@ -117,8 +133,29 @@ export default function LevelSatu() {
     }
   }, []) // empty deps — stable forever, reads via latestRef
 
+  useEffect(() => {
+    if (!laserActive || (laserDirection !== 'left' && laserDirection !== 'right')) return
+
+    setDirectionSign(laserDirection)
+    setIsSignBlinking(true)
+
+    const timeoutId = setTimeout(() => {
+      setIsSignBlinking(false)
+      setDirectionSign(null)
+    }, 5000)
+
+    return () => clearTimeout(timeoutId)
+  }, [laserActive, laserDirection])
+
   return (
     <>
+      <style>{`
+        @keyframes sign-blink-fast {
+          0%, 49% { opacity: 1; }
+          50%, 100% { opacity: 0; }
+        }
+      `}</style>
+
       {/* Ghost image that follows the cursor while dragging */}
       {isDragging && (
         <img
@@ -140,7 +177,7 @@ export default function LevelSatu() {
       <div
         className="min-h-screen flex justify-center"
         style={{
-          backgroundImage: "url('/assets/BackgroundLab.png')",
+          backgroundImage: "url('/assets/Background_Lab.png')",
           backgroundSize: "90%",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
@@ -175,17 +212,35 @@ export default function LevelSatu() {
         </div>
 
         {/* Laser point — animates on charge interaction */}
-        <div className='relative mt-24 translate-x-60'>
+        <div className='absolute top-12 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
           <img
-            src="/assets/Icon_LasserPoint.png"
-            alt="laser point"
-            width={15}
-            style={laserStyle}
+            src="/assets/Asset_PenggarisGayaColoumb.png"
+            alt="penggaris"
+            width={800}
+            className='relative z-0'
           />
+          <div className='absolute top-1/2 left-1/2 -translate-x-1/4 -translate-y-7 z-10'>
+            <img
+              src="/assets/Icon_LasserPoint.png"
+              alt="laser point"
+              width={15}
+              style={laserStyle}
+            />
+          </div>
+          {directionSign && (
+            <div className={`absolute bottom-4 z-10 ${signPositionClass}`}>
+              <img
+                src={moveSignSrc}
+                alt="sign"
+                width={100}
+                style={isSignBlinking ? { animation: 'sign-blink-fast 0.22s steps(1, end) infinite' } : undefined}
+              />
+            </div>
+          )}
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-44' style={{ marginTop: '24.5rem' }}>
+        <div className='flex flex-col relative items-center justify-center -ml-44' style={{ marginTop: '25rem' }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -283,6 +338,18 @@ export default function LevelSatu() {
             </div>
           </div>
         </div>
+        <button
+          type='button'
+          className='absolute bottom-4 right-20'
+          onClick={handleReset}
+          aria-label='Reset level one tools'
+        >
+          <img
+            src='/assets/Button_Refresh.png'
+            alt='reset button'
+            width={64}
+          />
+        </button>
       </div>
     </>
   )

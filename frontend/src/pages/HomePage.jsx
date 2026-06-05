@@ -9,7 +9,7 @@ export default function HomePage() {
         alt="Selamat Datang" 
         width={660}
         height={120}
-        className="mb-4 -translate-y-20"
+        className="mb-4 -translate-y-12"
         />
         <div className="relative flex items-center justify-center">
             <img 
