@@ -60,7 +60,8 @@ def shoot(req: ShootRequest) -> ShootResponse:
 
         laser_active = True
         # Distance is movement magnitude; direction remains in laser_direction.
-        laser_distance = abs(force_value) // 10
+        laser_distance = abs(force_value) // 4
+        print(laser_distance)
         # Positive force product → same-sign charges → repulsion (move away = right)
         # Negative force product → opposite-sign charges → attraction (move together = left)
         laser_direction = "right" if raw_force > 0 else "left"

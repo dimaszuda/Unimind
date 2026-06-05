@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export const useLevelTwoStore = create((set) => ({
+const initialLevelTwoState = {
   sliderValue: 0,        // -10 to +10 μC — set by the slider
   bolaCharge: 0,         // current bola charge in μC
   statifCharge: 0,       // current statif charge in μC
@@ -11,6 +11,9 @@ export const useLevelTwoStore = create((set) => ({
   laserDistance: null,   // number (px) | null — movement distance from backend (|F| / 10)
   isProcessing: false,
   forceValue: null,      // number (N) | null — only set after both objects are charged
+}
+export const useLevelTwoStore = create((set) => ({
+  ...initialLevelTwoState,
 
   setSlider: (value) => set({ sliderValue: value }),
 
@@ -27,4 +30,5 @@ export const useLevelTwoStore = create((set) => ({
 
   setProcessing: (value) => set({ isProcessing: value }),
   setForceValue: (value) => set({ forceValue: value }),
+  resetLevelTwo: () => set({...initialLevelTwoState})
 }))
