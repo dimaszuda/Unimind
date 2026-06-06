@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { Link } from "react-router-dom";
 import { useLevelOneStore } from '@/store/levelOneStore'
 import { useTimiBot } from '@/hooks/useTimiBot'
 import TimiBotPanel from '@/components/TimiBotPanel'
@@ -238,7 +239,7 @@ export default function LevelSatu() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(40px)` }}>
+        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(46px)` }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -267,7 +268,7 @@ export default function LevelSatu() {
             src={bolaSrc}
             alt="bola"
             width={36}
-            className='absolute -mt-10 -ml-40'
+            className='absolute -mt-11 -ml-40'
             style={ballMovement}
           />
         </div>
@@ -337,18 +338,31 @@ export default function LevelSatu() {
             </div>
           </div>
         </div>
-        <button
-          type='button'
-          className='absolute bottom-4 right-20'
-          onClick={handleReset}
-          aria-label='Reset level one tools'
-        >
-          <img
-            src='/assets/Button_Refresh.png'
-            alt='reset button'
-            width={64}
-          />
-        </button>
+        <div className='absolute flex justify-center bottom-3 right-20 gap-5 z-40'>
+          <button
+            type='button'
+            onClick={handleReset}
+            aria-label='Reset level one tools'
+            className='group relative cursor-pointer hover:scale-110 hover:opacity-80 transition-all duration-200'
+          >
+            <img
+              src='/assets/Button_Refresh.png'
+              alt='reset button'
+              width={64}
+            />
+            <span className='pointer-events-none absolute -top-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-xs text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100'>
+              Reset Lab
+            </span>
+          </button>
+            <Link to='/chat'>
+                <img
+                    src="assets/Button_Lanjutkan.png"
+                    alt="Tombol Lanjutkan"
+                    width={180}
+                    className="cursor-pointer hover:scale-110 hover:opacity-80 transition-all duration-200"
+                />
+            </Link>
+        </div>
       </div>
     </>
   )
