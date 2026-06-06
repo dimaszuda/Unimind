@@ -71,6 +71,15 @@ export default function LevelTiga() {
     transition: 'transform 5s ease',
   }
 
+  const ballMovement = {
+    transform: laserActive
+      ? (laserDirection === 'right'
+          ? `translateX(20px)`
+          : `translateX(-20px)`)
+      : 'translateX(0)',
+    transition: 'transform 5s ease',
+  }
+
   const moveSignSrc = directionSign === 'right'
     ? '/assets/move_right.png'
     : '/assets/move_left.png'
@@ -84,7 +93,16 @@ export default function LevelTiga() {
   const distanceThumbOffset = ((distanceValue - 1) / 9) * 120 - 60
 
   // Statif horizontal offset: distance=1 → rightmost (+90px), distance=10 → 0px
-  const statifTranslateX = (10 - distanceValue) * 16
+  let statifTranslateX;
+  if (distanceValue < 5) {
+    statifTranslateX = distanceValue * 29 / 2
+  }
+  else if (distanceValue >= 5 && distanceValue < 9) {
+    statifTranslateX = distanceValue * 29 / 2 - 1
+  }
+  else {
+    statifTranslateX = distanceValue * 29 / 2 - 2
+  }
 
   const handleLauncherMouseDown = (e) => {
     if (latestRef.current.sliderValue === 0 || latestRef.current.isProcessing) return
@@ -100,6 +118,8 @@ export default function LevelTiga() {
     setDirectionSign(null)
     setIsSignBlinking(false)
     resetLevelTwo()
+    setDistanceValue(1)
+
   }
 
   // Register mouse listeners ONCE — read all state via latestRef (never stale)
@@ -296,8 +316,8 @@ export default function LevelTiga() {
             src={statifSrc}
             alt="tool statif"
             width={200}
-            className='z-0 -mt-56 mr-[124px]'
-            style={{ transform: `translateX(${statifTranslateX}px)` }}
+            className='z-0 -mt-56 -mr-[167px]'
+            style={{ transform: `translateX(-${statifTranslateX}px)` }}
           />
           
           <div className="flex flex-col items-center justify-center mt-4 mr-36 w-48 h-16 bg-white/50 border border-white rounded-2xl gap-3">
@@ -362,6 +382,7 @@ export default function LevelTiga() {
             alt="bola"
             width={36}
             className='absolute -mt-12 -ml-40'
+            style={ballMovement}
           />
         </div>
 

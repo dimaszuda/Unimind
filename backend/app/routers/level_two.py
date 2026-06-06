@@ -24,7 +24,7 @@ class ShootResponse(BaseModel):
     new_statif_state: Literal["Netral", "Positif", "Negatif"]
     laser_direction: Optional[Literal["left", "right"]]
     laser_active: bool
-    laser_distance: Optional[int]
+    laser_distance: Optional[float]
     force_value: Optional[int]  # result of F = q1*q2 / d^2, None if either charge is 0
 
 
@@ -49,7 +49,7 @@ def shoot(req: ShootRequest) -> ShootResponse:
     both_charged = new_bola_charge != 0 and new_statif_charge != 0
 
     force_value: Optional[int] = None
-    laser_distance: Optional[int] = None
+    laser_distance: Optional[float] = None
     laser_direction: Optional[Literal["left", "right"]] = None
     laser_active = False
 
@@ -66,22 +66,10 @@ def shoot(req: ShootRequest) -> ShootResponse:
 
         # Distance is movement magnitude; direction remains in laser_direction.
         force_magnitude = abs(force_value)
-        # Scale 100 -> 1, 200 -> 2, 300 -> 3, etc. Keep minimum step 1.
-        step_multiplier = max(1, force_magnitude // 100)
-        if laser_direction == 'right':
-            if step_multiplier < 6:
-                offset = 2 + 2*(1-step_multiplier)
-            else:
-                offset = 2 + 2*(1-step_multiplier) + 5
+        if force_magnitude < 500:
+            laser_distance = 69/2000 * force_magnitude
         else:
-            if step_multiplier < 4:
-                offset = 2 + 2*(1-step_multiplier)
-            elif step_multiplier > 4 and step_multiplier < 7:
-                offset = 2 + 2*(1-step_multiplier) + 4
-            else:
-                offset = 2 + 2*(1-step_multiplier) + 8
-
-        laser_distance = int((step_multiplier*33)+(3-offset))
+            laser_distance = 69/2000 * force_magnitude
         print(f"LASER DISTANCE: {laser_distance}")
 
     return ShootResponse(

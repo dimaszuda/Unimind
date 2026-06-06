@@ -55,6 +55,15 @@ export default function LevelSatu() {
     transition: 'transform 5s ease',
   }
 
+  const ballMovement = {
+    transform: laserActive
+      ? (laserDirection === 'right'
+          ? `translateX(20px)`
+          : `translateX(-20px)`)
+      : 'translateX(0)',
+    transition: 'transform 5s ease',
+  }
+
   const moveSignSrc = directionSign === 'right'
     ? '/assets/move_right.png'
     : '/assets/move_left.png'
@@ -212,14 +221,14 @@ export default function LevelSatu() {
         </div>
 
         {/* Laser point — animates on charge interaction */}
-        <div className='absolute top-12 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
+        <div className='absolute top-8 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
           <img
-            src="/assets/Asset_PenggarisGayaColoumb.png"
+            src="/assets/penggaris.png"
             alt="penggaris"
-            width={800}
-            className='relative z-0'
+            width={700}
+            className='relative z-0 max-w-none'
           />
-          <div className='absolute top-1/2 left-1/2 -translate-x-1/4 -translate-y-7 z-10'>
+          <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-2 z-10'>
             <img
               src="/assets/Icon_LasserPoint.png"
               alt="laser point"
@@ -240,7 +249,7 @@ export default function LevelSatu() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-44' style={{ marginTop: '25rem' }}>
+        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(40px)` }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -269,7 +278,8 @@ export default function LevelSatu() {
             src={bolaSrc}
             alt="bola"
             width={36}
-            className='absolute -mt-12 -ml-40'
+            className='absolute -mt-10 -ml-40'
+            style={ballMovement}
           />
         </div>
 

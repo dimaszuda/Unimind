@@ -68,6 +68,15 @@ export default function LevelDua() {
     transition: 'transform 5s ease',
   }
 
+  const ballMovement = {
+    transform: laserActive
+      ? (laserDirection === 'right'
+          ? `translateX(10px)`
+          : `translateX(-10px)`)
+      : 'translateX(0)',
+    transition: 'transform 5s ease',
+  }
+
   const moveSignSrc = directionSign === 'right'
     ? '/assets/move_right.png'
     : '/assets/move_left.png'
@@ -256,7 +265,7 @@ export default function LevelDua() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem' }}>
+        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(35px)` }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -285,7 +294,8 @@ export default function LevelDua() {
             src={bolaSrc}
             alt="bola"
             width={36}
-            className='absolute -mt-12 -ml-40'
+            className='absolute -mt-11 -ml-40'
+            style={ballMovement}
           />
         </div>
 

@@ -71,9 +71,9 @@ def shoot(req: ShootRequestL3) -> ShootResponseL3:
         force_magnitude = abs(force_value)
 
         if force_magnitude < 500:
-            laser_distance = 69/200 * force_magnitude
+            laser_distance = 69/2000 * force_magnitude
         else:
-            laser_distance = 69/200 * force_magnitude - 5
+            laser_distance = 69/2000 * force_magnitude - 5
 
         print(f"LASER DISTANCE: {laser_distance}")
         print(f"force Value: {force_value}")
