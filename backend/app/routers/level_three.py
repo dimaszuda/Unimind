@@ -24,7 +24,7 @@ class ShootResponseL3(BaseModel):
     new_statif_state: Literal["Netral", "Positif", "Negatif"]
     laser_direction: Optional[Literal["left", "right"]]
     laser_active: bool
-    laser_distance: Optional[int]
+    laser_distance: Optional[float]
     force_value: Optional[int]
 
 
@@ -57,18 +57,26 @@ def shoot(req: ShootRequestL3) -> ShootResponseL3:
     both_charged = new_bola_charge != 0 and new_statif_charge != 0
 
     force_value: Optional[float] = None
-    laser_distance: Optional[int] = None
+    laser_distance: Optional[float] = None
     laser_direction: Optional[Literal["left", "right"]] = None
     laser_active = False
 
     if both_charged:
         distance_m = req.distance_cm / 100
         raw_force = KONSTANTA * (new_statif_charge * 1e-6 * new_bola_charge * 1e-6) / (distance_m ** 2)
-        #TODO: buat force value jadi integer aja, baik di tampilan maupun di backend
         force_value = round(raw_force)
         laser_active = True
-        laser_distance = abs(round(raw_force)) // 10
         laser_direction = "right" if raw_force > 0 else "left"
+
+        force_magnitude = abs(force_value)
+
+        if force_magnitude < 500:
+            laser_distance = 69/200 * force_magnitude
+        else:
+            laser_distance = 69/200 * force_magnitude - 5
+
+        print(f"LASER DISTANCE: {laser_distance}")
+        print(f"force Value: {force_value}")
 
     return ShootResponseL3(
         new_bola_charge=new_bola_charge,

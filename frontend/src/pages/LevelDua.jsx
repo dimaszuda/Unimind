@@ -62,8 +62,8 @@ export default function LevelDua() {
   const laserStyle = {
     transform: laserActive
       ? (laserDirection === 'right'
-          ? `translateX(${laserDistance ? laserDistance+30 : 0}px)`
-          : `translateX(-${laserDistance ? laserDistance-7 : 0}px)`)
+          ? `translateX(${laserDistance ? laserDistance: 0}px)`
+          : `translateX(-${laserDistance ? laserDistance : 0}px)`)
       : 'translateX(0)',
     transition: 'transform 5s ease',
   }
@@ -228,14 +228,14 @@ export default function LevelDua() {
         </div>
 
         {/* Laser point — animates on charge interaction */}
-        <div className='absolute top-12 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
+        <div className='absolute top-8 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
           <img
-            src="/assets/Asset_PenggarisGayaColoumb.png"
+            src="/assets/penggaris.png"
             alt="penggaris"
-            width={600}
-            className='relative z-0'
+            width={700}
+            className='relative z-0 max-w-none'
           />
-          <div className='absolute top-1/2 left-1/2 -translate-x-1/4 -translate-y-7 z-10'>
+          <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-2 z-10'>
             <img
               src="/assets/Icon_LasserPoint.png"
               alt="laser point"

@@ -57,14 +57,32 @@ def shoot(req: ShootRequest) -> ShootResponse:
         # F = q1 * q2 / d^2  (charges in μC, distance in m)
         raw_force = KONSTANTA * (new_statif_charge * math.pow(10, -6) * new_bola_charge * math.pow(10, -6)) / (DISTANCE_M ** 2)
         force_value = round(raw_force)
-
+        print(f"force_value: {force_value}")
         laser_active = True
-        # Distance is movement magnitude; direction remains in laser_direction.
-        laser_distance = abs(force_value) // 4
-        print(laser_distance)
+
         # Positive force product → same-sign charges → repulsion (move away = right)
         # Negative force product → opposite-sign charges → attraction (move together = left)
         laser_direction = "right" if raw_force > 0 else "left"
+
+        # Distance is movement magnitude; direction remains in laser_direction.
+        force_magnitude = abs(force_value)
+        # Scale 100 -> 1, 200 -> 2, 300 -> 3, etc. Keep minimum step 1.
+        step_multiplier = max(1, force_magnitude // 100)
+        if laser_direction == 'right':
+            if step_multiplier < 6:
+                offset = 2 + 2*(1-step_multiplier)
+            else:
+                offset = 2 + 2*(1-step_multiplier) + 5
+        else:
+            if step_multiplier < 4:
+                offset = 2 + 2*(1-step_multiplier)
+            elif step_multiplier > 4 and step_multiplier < 7:
+                offset = 2 + 2*(1-step_multiplier) + 4
+            else:
+                offset = 2 + 2*(1-step_multiplier) + 8
+
+        laser_distance = int((step_multiplier*33)+(3-offset))
+        print(f"LASER DISTANCE: {laser_distance}")
 
     return ShootResponse(
         new_bola_charge=new_bola_charge,
