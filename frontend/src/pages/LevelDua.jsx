@@ -405,7 +405,7 @@ export default function LevelDua() {
               Reset Lab
             </span>
           </button>
-            <Link to='/chat'>
+            <Link to='/reflection'>
                 <img
                     src="assets/Button_Lanjutkan.png"
                     alt="Tombol Lanjutkan"

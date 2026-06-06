@@ -492,7 +492,7 @@ export default function LevelTiga() {
               Reset Lab
             </span>
           </button>
-            <Link to='/chat'>
+            <Link to='/reflection'>
                 <img
                     src="assets/Button_Lanjutkan.png"
                     alt="Tombol Lanjutkan"
