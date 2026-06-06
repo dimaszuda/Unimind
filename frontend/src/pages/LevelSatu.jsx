@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLevelOneStore } from '@/store/levelOneStore'
+import { useTimiBot } from '@/hooks/useTimiBot'
+import TimiBotPanel from '@/components/TimiBotPanel'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
@@ -28,7 +30,14 @@ export default function LevelSatu() {
 
   // Always-fresh snapshot so the stable event handlers never read stale closures
   const latestRef = useRef({})
-  latestRef.current = { selectedCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing }
+
+  // Timi Bot — clue, AFK warning, and affirmation logic
+  const { messages: timiMessages, recordInteraction, notifyLaserMoved, addPlayerMessage } = useTimiBot({
+    level: 'level1',
+    getState: () => latestRef.current,
+  })
+
+  latestRef.current = { selectedCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing, recordInteraction, notifyLaserMoved }
 
   const launcherSrc = selectedCharge === 'Positif'
     ? '/assets/Tool_PenembakMuatanPositif.png'
@@ -76,6 +85,7 @@ export default function LevelSatu() {
     isDraggingRef.current = true
     setIsDragging(true)
     setDragPos({ x: e.clientX, y: e.clientY })
+    latestRef.current.recordInteraction()
   }
 
   const handleReset = () => {
@@ -128,6 +138,8 @@ export default function LevelSatu() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         applyShootResult(data)
+        latestRef.current.recordInteraction()
+        if (data.laser_active) latestRef.current.notifyLaserMoved()
       } catch (err) {
         console.error('Shoot error:', err)
       } finally {
@@ -195,30 +207,7 @@ export default function LevelSatu() {
         }}
       >
         {/* Timi Bot panel */}
-        <div className='flex flex-col relative items-center justify-center mt-24 mr-48'>
-          <div className="flex justify-center items-end w-80 h-80 bg-gray-500/15 border-2 rounded-2xl border-white ml-20">
-            <div className="relative mb-4">
-              <textarea
-                className="w-72 h-28 p-3 bg-white border-2 border-black rounded-2xl resize-none text-black"
-                placeholder="Tulis pesan..."
-              />
-              <button className="absolute bottom-4 right-3">
-                <img
-                  src="/assets/paper-plane.png"
-                  alt="send chat"
-                  width={24}
-                />
-              </button>
-            </div>
-          </div>
-          <img
-            src="/assets/Image_Robot.png"
-            alt="Timi Bot"
-            width={160}
-            className='ml-36 -mt-4 relative z-10'
-            style={{ transform: 'scaleX(-1)' }}
-          />
-        </div>
+        <TimiBotPanel messages={timiMessages} onSendMessage={addPlayerMessage} />
 
         {/* Laser point — animates on charge interaction */}
         <div className='absolute top-8 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
@@ -311,7 +300,7 @@ export default function LevelSatu() {
                 alt="muatan positif"
                 width={20}
                 className='h-auto'
-                onClick={() => selectCharge('Positif')}
+                onClick={() => { selectCharge('Positif'); recordInteraction() }}
                 style={{
                   cursor: 'pointer',
                   outline: selectedCharge === 'Positif' ? '2px solid #ef4444' : 'none',
@@ -324,7 +313,7 @@ export default function LevelSatu() {
                 alt="muatan negatif"
                 width={20}
                 className='h-auto'
-                onClick={() => selectCharge('Negatif')}
+                onClick={() => { selectCharge('Negatif'); recordInteraction() }}
                 style={{
                   cursor: 'pointer',
                   outline: selectedCharge === 'Negatif' ? '2px solid #3b82f6' : 'none',
