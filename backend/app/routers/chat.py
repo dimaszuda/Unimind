@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.ai_client import get_chat_completion, reflection_service, Reflection
+from app.ai_client import get_chat_completion, reflection_service, Reflection, lab_chat
 
 router = APIRouter()
 
@@ -20,6 +20,7 @@ class ChatResponse(BaseModel):
 
 class ReflectionRequest(BaseModel):
     name: str
+    question_number: int
     question: str
     answer: str
 
@@ -39,7 +40,7 @@ async def chat(request: ChatRequest):
 @router.post("/reflection", response_model=Reflection)
 async def handle_reflection(request: ReflectionRequest):
     try:
-        result = reflection_service(request.name, request.question, request.answer)
+        result = reflection_service(request.name, request.question_number, request.question, request.answer)
         
         if result is None:
             raise HTTPException(status_code=500, detail="Model returned unparseable response")
@@ -47,5 +48,17 @@ async def handle_reflection(request: ReflectionRequest):
         return Reflection(
             feedback=result.feedback
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("lab-chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    try:
+        result = lab_chat(request.name, request.message)
+        
+        if result is None:
+            raise HTTPException(status_code=500, detail="Model returned unparseable response")
+        
+        return ChatResponse(reply=result.feedback)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
