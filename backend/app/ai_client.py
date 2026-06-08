@@ -19,8 +19,6 @@ SYSTEM_PROMPT = """
     - Hindari bahasa yang terlalu formal, kaku, atau terdengar seperti buku pelajaran.
     - Tunjukkan antusiasme dan rasa ingin membantu siswa memahami konsep.
     - Berikan respons yang terasa seperti percakapan, bukan penilaian ujian.
-    - Sesekali gunakan ekspresi percakapan yang wajar jika cocok dengan konteks, tetapi jangan berlebihan dan jangan memaksakan slang.
-    - Fokus membuat siswa merasa nyaman untuk belajar dan mencoba menjawab.
 
     LARANGAN:
     - Jangan memberikan jawaban diluar konteks materi Hukum Coulomb.
@@ -43,7 +41,6 @@ def reflection_prompt(is_last_question: bool) -> str:
             1. Tunjukkan bagian yang kurang tepat tanpa menghakimi.
             2. Jelaskan konsep yang benar dengan bahasa sederhana.
             3. Bantu siswa memahami letak kesalahannya.
-            4. Tutup dengan nada yang menyemangati agar siswa tetap mau mencoba.
         """
     else:
         return f"""
@@ -57,7 +54,6 @@ def reflection_prompt(is_last_question: bool) -> str:
             1. Tunjukkan bagian yang kurang tepat tanpa menghakimi.
             2. Jelaskan konsep yang benar dengan bahasa sederhana.
             3. Bantu siswa memahami letak kesalahannya.
-            4. Tutup dengan nada yang menyemangati agar siswa tetap mau mencoba.
 
             Baik jawaban benar maupun salah, selalu beritahu kalau kita akan lanjut ke pertanyaan berikutnya. 
         """
@@ -188,7 +184,7 @@ def lab_chat(name: str, message: str, lab: str, history: list = None) -> str:
         parsed = response.output_parsed
         if parsed is None:
             raise ValueError("Model returned unparseable response")
-
+        print(f"📊 Tokens used - Input: {response.usage.input_tokens}, Output: {response.usage.output_tokens}, Total: {response.usage.input_tokens + response.usage.output_tokens}")
         return parsed
     except Exception as e:
         return f"Error occured - {e}"
