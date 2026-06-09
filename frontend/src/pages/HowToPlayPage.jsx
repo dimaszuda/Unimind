@@ -11,7 +11,7 @@ const steps = [
         number: 2,
         title: "Isi Identitas & Pilih Tujuan Pembelajaran",
         description:
-            "Masukkan identitas diri dan pilih tujuan pembelajaran yang ingin dicapai. Sistem akan menampilkan fitur praktikum yang sesuai dengan tujuan yang dipilih.",
+            "Jalankan praktikum virtual sesuai petunjuk yang tersedia. Selama praktikum, pengguna dapat mengatur percobaan dan mengamati interaksi gaya listrik antar muatan.Jika mengalami kebingungan atau stuck, gunakan bantuan AI Assistant TIMI untuk mendapatkan arahan selama praktikum berlangsung.",
     },
     {
         number: 3,
@@ -54,7 +54,7 @@ export default function HowToPlayPage() {
                 </Link>
 
                 <p className="font-bold mb-4" style={contentStyle}>
-                    Selamat datang di UniLab (laboratorium virtual berbasis AI untuk materi Hukum
+                    Selamat datang di Unimind (laboratorium virtual berbasis AI untuk materi Hukum
                     Coulomb). Ikuti tahapan berikut agar proses praktikum berjalan dengan optimal.
                 </p>
 

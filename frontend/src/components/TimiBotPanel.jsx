@@ -121,10 +121,10 @@ export default function TimiBotPanel({ messages, onSendMessage, isThinking = fal
       </div>
 
       <img
-        src="/assets/Image_Robot.png"
+        src="/assets/Robot Timi.gif"
         alt="Timi Bot"
-        width={160}
-        className="ml-36 -mt-4 relative z-10"
+        width={240}
+        className="mr-40 -mt-12 relative z-10"
         style={{ transform: 'scaleX(-1)' }}
       />
     </div>
