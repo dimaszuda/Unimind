@@ -43,9 +43,10 @@ export default function LevelDua() {
   const latestRef = useRef({})
 
   // Timi Bot — clue, AFK warning, and affirmation logic
-  const { messages: timiMessages, recordInteraction, notifyLaserMoved, addPlayerMessage } = useTimiBot({
+  const { messages: timiMessages, recordInteraction, notifyLaserMoved, sendPlayerMessage, isThinking } = useTimiBot({
     level: 'level2',
     getState: () => latestRef.current,
+    playerName: studentId,
   })
 
   latestRef.current = { sliderValue, bolaCharge, statifCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing, recordInteraction, notifyLaserMoved }
@@ -224,7 +225,7 @@ export default function LevelDua() {
         }}
       >
         {/* Timi Bot panel */}
-        <TimiBotPanel messages={timiMessages} onSendMessage={addPlayerMessage} />
+        <TimiBotPanel messages={timiMessages} onSendMessage={sendPlayerMessage} isThinking={isThinking} />
 
         {/* Laser point — animates on charge interaction */}
         <div className='absolute top-8 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
@@ -255,7 +256,7 @@ export default function LevelDua() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(45px)` }}>
+        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(25px)` }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -284,7 +285,7 @@ export default function LevelDua() {
             src={bolaSrc}
             alt="bola"
             width={36}
-            className='absolute -mt-10 -ml-40'
+            className='absolute -mt-10 -ml-[152px]'
             style={ballMovement}
           />
         </div>

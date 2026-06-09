@@ -46,9 +46,10 @@ export default function LevelTiga() {
   const latestRef = useRef({})
 
   // Timi Bot — clue, AFK warning, and affirmation logic
-  const { messages: timiMessages, recordInteraction, notifyLaserMoved, addPlayerMessage } = useTimiBot({
+  const { messages: timiMessages, recordInteraction, notifyLaserMoved, sendPlayerMessage, isThinking } = useTimiBot({
     level: 'level3',
     getState: () => latestRef.current,
+    playerName: studentId,
   })
 
   latestRef.current = { sliderValue, bolaCharge, statifCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing, distanceValue, recordInteraction, notifyLaserMoved }
@@ -84,8 +85,8 @@ export default function LevelTiga() {
   const ballMovement = {
     transform: laserActive
       ? (laserDirection === 'right'
-          ? `translateX(20px)`
-          : `translateX(-20px)`)
+          ? `translateX(13px)`
+          : `translateX(-13px)`)
       : 'translateX(0)',
     transition: 'transform 5s ease',
   }
@@ -263,7 +264,7 @@ export default function LevelTiga() {
         }}
       >
         {/* Timi Bot panel */}
-        <TimiBotPanel messages={timiMessages} onSendMessage={addPlayerMessage} />
+        <TimiBotPanel messages={timiMessages} onSendMessage={sendPlayerMessage} isThinking={isThinking} />
 
         {/* Laser point — animates on charge interaction */}
         <div className='absolute top-8 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
@@ -294,7 +295,7 @@ export default function LevelTiga() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '29rem', transform: `translateX(24px)` }}>
+        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '29rem', transform: `translateX(18px)` }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -371,7 +372,7 @@ export default function LevelTiga() {
             src={bolaSrc}
             alt="bola"
             width={36}
-            className='absolute -mt-12 -ml-40'
+            className='absolute -mt-12 -ml-36'
             style={ballMovement}
           />
         </div>

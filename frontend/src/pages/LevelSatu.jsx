@@ -33,9 +33,10 @@ export default function LevelSatu() {
   const latestRef = useRef({})
 
   // Timi Bot — clue, AFK warning, and affirmation logic
-  const { messages: timiMessages, recordInteraction, notifyLaserMoved, addPlayerMessage } = useTimiBot({
+  const { messages: timiMessages, recordInteraction, notifyLaserMoved, sendPlayerMessage, isThinking } = useTimiBot({
     level: 'level1',
     getState: () => latestRef.current,
+    playerName: studentId,
   })
 
   latestRef.current = { selectedCharge, bolaState, statifState, isProcessing, studentId, applyShootResult, setProcessing, recordInteraction, notifyLaserMoved }
@@ -68,8 +69,8 @@ export default function LevelSatu() {
   const ballMovement = {
     transform: laserActive
       ? (laserDirection === 'right'
-          ? `translateX(20px)`
-          : `translateX(-20px)`)
+          ? `translateX(10px)`
+          : `translateX(-10px)`)
       : 'translateX(0)',
     transition: 'transform 5s ease',
   }
@@ -208,7 +209,7 @@ export default function LevelSatu() {
         }}
       >
         {/* Timi Bot panel */}
-        <TimiBotPanel messages={timiMessages} onSendMessage={addPlayerMessage} />
+        <TimiBotPanel messages={timiMessages} onSendMessage={sendPlayerMessage} isThinking={isThinking} />
 
         {/* Laser point — animates on charge interaction */}
         <div className='absolute top-8 left-1/2 -translate-x-1/4 z-20 flex justify-center items-center'>
@@ -239,7 +240,7 @@ export default function LevelSatu() {
         </div>
 
         {/* Statif (drop target) */}
-        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(46px)` }}>
+        <div className='flex flex-col relative items-center justify-center -ml-28' style={{ marginTop: '25rem', transform: `translateX(30px)` }}>
           <img
             src="/assets/Tool_RulerStatif.png"
             alt="ruler"
@@ -268,7 +269,7 @@ export default function LevelSatu() {
             src={bolaSrc}
             alt="bola"
             width={36}
-            className='absolute -mt-11 -ml-40'
+            className='absolute -mt-11 -ml-[152px]'
             style={ballMovement}
           />
         </div>

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
 // ─── Timing constants ──────────────────────────────────────────────────────
 const CLUE_INTERVAL_MS = 60_000   // check every 1 minute
 const CLUE_MAX_CHECKS  = 10       // stop after 10 minutes
@@ -73,18 +75,22 @@ function getContextualClue(level, state) {
 /**
  * useTimiBot — static Timi Bot logic for lab pages.
  *
- * @param {{ level: 'level1'|'level2'|'level3', getState: () => object }} opts
+ * @param {{ level: 'level1'|'level2'|'level3', getState: () => object, playerName?: string }} opts
  *   `getState` is called on timer ticks and must return the current lab state snapshot.
+ *   `playerName` is sent to the backend when the player asks a question.
  *
  * @returns {{
  *   messages: Array<{id:number, sender:'bot'|'player', text:string, timestamp:number}>,
+ *   isThinking: boolean,
  *   recordInteraction: () => void,
  *   notifyLaserMoved: () => void,
  *   addPlayerMessage: (text:string) => void,
+ *   sendPlayerMessage: (text:string) => void,
  * }}
  */
-export function useTimiBot({ level, getState }) {
+export function useTimiBot({ level, getState, playerName = 'student' }) {
   const [messages, setMessages] = useState([])
+  const [isThinking, setIsThinking] = useState(false)
 
   // Tracks last meaningful game interaction (charge select, drag, shoot)
   const lastInteractionRef   = useRef(Date.now())
@@ -94,6 +100,10 @@ export function useTimiBot({ level, getState }) {
   const afkCheckCountRef     = useRef(0)
   const affirmationIndexRef  = useRef(0)
   const messageIdRef         = useRef(0)
+  // Sliding window: keeps last 3 {role, content} messages for context
+  const chatHistoryRef       = useRef([])
+  // Tracks sequential turn number for logging
+  const turnRef              = useRef(0)
   // Keep getState fresh without re-creating effects on every render
   const getStateRef          = useRef(getState)
   getStateRef.current = getState
@@ -130,6 +140,66 @@ export function useTimiBot({ level, getState }) {
   const addPlayerMessage = useCallback((text) => {
     addMessage(text, 'player')
   }, [addMessage])
+
+  /**
+   * Send a player message to the backend /chat/lab-chat endpoint,
+   * show the response from Timi, and reset the clue interval.
+   */
+  const sendPlayerMessage = useCallback(async (text) => {
+    if (!text) return
+    // Show the player's message immediately
+    addMessage(text, 'player')
+    // Reset idle / AFK timers — asking a question counts as activity
+    lastInteractionRef.current = Date.now()
+    lastActivityRef.current    = Date.now()
+    clueCheckCountRef.current  = 0
+
+    // Capture current history snapshot before updating
+    const history = chatHistoryRef.current
+    const turn    = ++turnRef.current
+    const timestamp = new Date().toISOString()
+
+    setIsThinking(true)
+    try {
+      const levelSuffix = { level1: 'one', level2: 'two', level3: 'three' }[level]
+      const t0 = Date.now()
+      const res = await fetch(`${API_BASE}/chat/lab-chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, message: text, lab: levelSuffix, history }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const responseTime = (Date.now() - t0) / 1000
+      addMessage(data.reply)
+
+      // Update sliding window: add user + assistant, keep last 3
+      chatHistoryRef.current = [
+        ...chatHistoryRef.current,
+        { role: 'user', content: text },
+        { role: 'assistant', content: data.reply },
+      ].slice(-3)
+
+      // Fire-and-forget: log to spreadsheet (errors are silent)
+      fetch(`${API_BASE}/log/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: playerName,
+          lab: levelSuffix,
+          turn,
+          timestamp,
+          student_message: text,
+          ai_message: data.reply,
+          response_time: responseTime,
+        }),
+      }).catch(() => {})
+    } catch {
+      addMessage('Ups, Timi sedang tidak bisa menjawab. Coba lagi sebentar ya! 🙏')
+    } finally {
+      setIsThinking(false)
+    }
+  }, [addMessage, playerName, level])
 
   // ── Track all mouse / keyboard activity for AFK detection ────────────────
   useEffect(() => {
@@ -181,5 +251,5 @@ export function useTimiBot({ level, getState }) {
     return () => clearInterval(id)
   }, [addMessage])
 
-  return { messages, recordInteraction, notifyLaserMoved, addPlayerMessage }
+  return { messages, isThinking, recordInteraction, notifyLaserMoved, addPlayerMessage, sendPlayerMessage }
 }

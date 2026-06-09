@@ -11,8 +11,8 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SHEET_CHAT_TAB       = "ChatHistory"
 SHEET_REFLECTION_TAB = "ReflectionLog"
 
-CHAT_HEADERS       = ["nama", "lab", "turn", "timestamp", "role", "pesan", "response_time"]
-REFLECTION_HEADERS = ["nama", "pertanyaan_refleksi", "jawaban_siswa", "feedback_ai", "response_time_ai"]
+CHAT_HEADERS       = ["nama", "lab", "turn", "timestamp", "role", "pesan", "response_time", "token_input", "token_output", "total_token"]
+REFLECTION_HEADERS = ["nama", "pertanyaan_refleksi", "jawaban_siswa", "feedback_ai", "response_time_ai", "token_input", "token_output", "total_token"]
 
 
 def _get_client() -> gspread.Client:

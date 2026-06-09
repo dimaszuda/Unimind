@@ -104,7 +104,7 @@ def get_summary(name: str, history: list = None, system_prompt: str = SUMMARY_PR
             raise ValueError("Model returned unparseable response")
         
         print(f"📊 Tokens used - Input: {response.usage.input_tokens}, Output: {response.usage.output_tokens}, Total: {response.usage.input_tokens + response.usage.output_tokens}")
-        return parsed
+        return parsed, response.usage.input_tokens, response.usage.output_tokens, response.usage.input_tokens + response.usage.output_tokens
     except Exception as e:
         return f"Error occured - {e}"
 
@@ -132,7 +132,7 @@ def reflection_service(name: str, last_question: bool, question: str, answer: st
             raise ValueError("Model returned unparseable response")
         
         print(f"📊 Tokens used - Input: {response.usage.input_tokens}, Output: {response.usage.output_tokens}, Total: {response.usage.input_tokens + response.usage.output_tokens}")
-        return parsed
+        return parsed, response.usage.input_tokens, response.usage.output_tokens, response.usage.input_tokens + response.usage.output_tokens
     except Exception as e:
         return f"Error occured - {e}"
 
@@ -157,8 +157,9 @@ def get_chat_completion(name: str, message: str, history: list = None, system_pr
         parsed = response.output_parsed
         if parsed is None:
             raise ValueError("Model returned unparseable response")
-
-        return parsed
+        
+        print(f"📊 Tokens used - Input: {response.usage.input_tokens}, Output: {response.usage.output_tokens}, Total: {response.usage.input_tokens + response.usage.output_tokens}")
+        return parsed, response.usage.input_tokens, response.usage.output_tokens, response.usage.input_tokens + response.usage.output_tokens
     except Exception as e:
         return f"Error occured - {e}"
     
@@ -185,6 +186,6 @@ def lab_chat(name: str, message: str, lab: str, history: list = None) -> str:
         if parsed is None:
             raise ValueError("Model returned unparseable response")
         print(f"📊 Tokens used - Input: {response.usage.input_tokens}, Output: {response.usage.output_tokens}, Total: {response.usage.input_tokens + response.usage.output_tokens}")
-        return parsed
+        return parsed, response.usage.input_tokens, response.usage.output_tokens, response.usage.input_tokens + response.usage.output_tokens
     except Exception as e:
         return f"Error occured - {e}"
