@@ -53,6 +53,9 @@ def append_chat_log(
     student_message: str,
     ai_message: str,
     response_time: float,
+    token_input: int,
+    token_output: int,
+    total_token: int
 ) -> None:
     """
     Append two rows to ChatHistory: one for the student message and one for the AI reply.
@@ -64,7 +67,7 @@ def append_chat_log(
     ws.append_rows(
         [
             [name, lab, turn, timestamp, "student", student_message, ""],
-            [name, lab, turn, timestamp, "ai",      ai_message,      round(response_time, 3)],
+            [name, lab, turn, timestamp, "ai",      ai_message,      round(response_time, 3), token_input, token_output, total_token],
         ],
         value_input_option="USER_ENTERED",
     )
@@ -76,12 +79,15 @@ def append_reflection_log(
     student_answer: str,
     ai_feedback: str,
     response_time: float,
+    token_input: int,
+    token_output: int,
+    total_token: int
 ) -> None:
     """Append one row to ReflectionLog."""
     spreadsheet = _get_spreadsheet()
     ws = _ensure_tab(spreadsheet, SHEET_REFLECTION_TAB, REFLECTION_HEADERS)
 
     ws.append_row(
-        [name, question, student_answer, ai_feedback, round(response_time, 3)],
+        [name, question, student_answer, ai_feedback, round(response_time, 3), token_input, token_output, total_token],
         value_input_option="USER_ENTERED",
     )

@@ -15,6 +15,9 @@ class ChatLogRequest(BaseModel):
     student_message: str
     ai_message: str
     response_time: float  # seconds
+    token_input: int
+    token_output: int
+    total_token: int
 
 
 class ReflectionLogRequest(BaseModel):
@@ -23,6 +26,9 @@ class ReflectionLogRequest(BaseModel):
     student_answer: str
     ai_feedback: str
     response_time: float  # seconds
+    token_input: int
+    token_output: int
+    total_token: int
 
 
 @router.post("/chat")
@@ -37,6 +43,9 @@ async def log_chat(request: ChatLogRequest):
             student_message=request.student_message,
             ai_message=request.ai_message,
             response_time=request.response_time,
+            token_input=request.token_input,
+            token_output=request.token_output,
+            total_token=request.total_token
         )
     except Exception as e:
         logger.warning("sheets log_chat failed: %s", e)
@@ -53,6 +62,9 @@ async def log_reflection(request: ReflectionLogRequest):
             student_answer=request.student_answer,
             ai_feedback=request.ai_feedback,
             response_time=request.response_time,
+            token_input=request.token_input,
+            token_output=request.token_output,
+            total_token=request.total_token
         )
     except Exception as e:
         logger.warning("sheets log_reflection failed: %s", e)

@@ -157,7 +157,7 @@ export function useTimiBot({ level, getState, playerName = 'student' }) {
     // Capture current history snapshot before updating
     const history = chatHistoryRef.current
     const turn    = ++turnRef.current
-    const timestamp = new Date().toISOString()
+    const timestamp = new Date().toLocaleString("sv-SE")
 
     setIsThinking(true)
     try {
@@ -180,6 +180,19 @@ export function useTimiBot({ level, getState, playerName = 'student' }) {
         { role: 'assistant', content: data.reply },
       ].slice(-3)
 
+      console.log({
+        name: playerName,
+        lab: levelSuffix,
+        turn,
+        timestamp,
+        student_message: text,
+        ai_message: data.reply,
+        response_time: responseTime,
+        token_input: data.input_tokens,
+        token_output: data.output_tokens,
+        total_token: data.total_tokens
+      })
+
       // Fire-and-forget: log to spreadsheet (errors are silent)
       fetch(`${API_BASE}/log/chat`, {
         method: 'POST',
@@ -192,6 +205,9 @@ export function useTimiBot({ level, getState, playerName = 'student' }) {
           student_message: text,
           ai_message: data.reply,
           response_time: responseTime,
+          token_input: data.input_tokens,
+          token_output: data.output_tokens,
+          total_token: data.total_tokens
         }),
       }).catch(() => {})
     } catch {

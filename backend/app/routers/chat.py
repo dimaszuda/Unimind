@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.ai_client import get_chat_completion, reflection_service, get_summary, lab_chat
+from ..core.ai_client import get_chat_completion, reflection_service, get_summary, lab_chat
 
 router = APIRouter()
 

@@ -23,7 +23,7 @@ const steps = [
 
 const contentStyle = {
     color: "black",
-    fontSize: "20px",
+    fontSize: "18px",
     fontFamily: "sans-serif",
     textAlign: "justify",
     marginLeft: "170px",

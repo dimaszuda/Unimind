@@ -59,7 +59,7 @@ export default function ReflectionPage() {
       if (isReflectionComplete) {
         // Free-chat mode after all reflection questions are done
         const turn = ++freeChatTurnRef.current
-        const timestamp = new Date().toISOString()
+        const timestamp = new Date().toLocaleString("sv-SE")
         const t0 = Date.now()
         const res = await fetch(`${API_BASE}/chat`, {
           method: 'POST',
@@ -90,6 +90,9 @@ export default function ReflectionPage() {
             student_message: trimmed,
             ai_message: data.reply,
             response_time: responseTime,
+            token_input: data.input_tokens,
+            token_output: data.output_tokens,
+            total_token: data.total_tokens
           }),
         }).catch(() => {})
       } else {
@@ -124,6 +127,9 @@ export default function ReflectionPage() {
             student_answer: trimmed,
             ai_feedback: data.feedback,
             response_time: responseTime,
+            token_input: data.input_tokens,
+            token_output: data.output_tokens,
+            total_token: data.total_tokens
           }),
         }).catch(() => {})
 
@@ -153,6 +159,9 @@ export default function ReflectionPage() {
               student_message: '[Ringkasan Refleksi]',
               ai_message: summaryData.feedback,
               response_time: summaryResponseTime,
+              token_input: data.input_tokens,
+              token_output: data.output_tokens,
+              total_token: data.total_tokens
             }),
           }).catch(() => {})
 

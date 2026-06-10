@@ -3,11 +3,13 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from pathlib import Path
+from ..cache.SemanticCache import cache
+from .intent_classifier import classify_intent, Intent
 
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 PANDUAN_PATH = BASE_DIR / "dictionary" / "LKPD_hukum_coulomb.md"
 PANDUAN = PANDUAN_PATH.read_text(encoding="utf-8")
 
@@ -41,6 +43,8 @@ def reflection_prompt(is_last_question: bool) -> str:
             1. Tunjukkan bagian yang kurang tepat tanpa menghakimi.
             2. Jelaskan konsep yang benar dengan bahasa sederhana.
             3. Bantu siswa memahami letak kesalahannya.
+
+            - Tidak ada pertanyaan berikutnya. Ini pertanyaan terakhir.
         """
     else:
         return f"""
@@ -62,26 +66,27 @@ SUMMARY_PROMPT = f"""
         Kamu adalah Timi, guru fisika Gen Z yang sabar, suportif, dan komunikatif.
 
         Buatlah ringkasan singkat tentang hasil semua jawaban siswa dari pertanyaan refleksi berdasarakan tujuan pembelajaran yang siswa pilih.
-        - Jika semua tujuan sudah sesuai, sampaikan bahwa tujuan pembelajaran telah tercapai, lalu berikan afirmasi dan katakan bahwa siswa bisa menanyakan apapun tentang hukum coulomb.
-        - Jika terdapat jawaban yang salah, sampaikan bahwa tujuan pembelajaran belum tercapai dan tunjukanlah bagian mana yang salah. 
+        - Jika semua tujuan sudah sesuai, selalu mulai dengan menyampaikan bahwa tujuan pembelajaran telah tercapai. baru berikan afirmasi dan katakan bahwa siswa bisa menanyakan apapun tentang hukum coulomb.
+        - Jika terdapat jawaban yang salah, selalu mulai dengan menyampaikan bahwa tujuan pembelajaran belum tercapai dan tunjukanlah bagian mana yang salah. 
 """
 
-def lab_prompt(lab_level: int, PANDUAN: str = PANDUAN) -> str:
-    PANDUAN_PATH = BASE_DIR / "dictionary" / f"Lab_{lab_level}.md"
-    PANDUAN_LAB = PANDUAN_PATH.read_text(encoding="utf-8")
-    return f"""
+def lab_prompt(lab_level: int, PANDUAN: str = PANDUAN, include_lab_guide: bool = True) -> str:
+    prompt = f"""
         {SYSTEM_PROMPT}
+    """
+    if include_lab_guide:
+        PANDUAN_PATH = BASE_DIR / "dictionary" / f"Lab_{lab_level}.md"
+        PANDUAN_LAB = PANDUAN_PATH.read_text(encoding="utf-8")
+        prompt += f"""
 
         ## Panduan Praktikum
-        Berikut panduan praktikum yang bisa kamu jadikan referensi.
-        Gunakan hanya jika pertanyaan siswa berkaitan dengan panduan di sini.
-
         {PANDUAN}
 
         ## Panduan Lab
         Berikut panduan penggunaan Lab Virtual
         {PANDUAN_LAB}
-    """
+        """
+    return prompt
 
 def get_summary(name: str, history: list = None, system_prompt: str = SUMMARY_PROMPT) -> Reflection:
     try:
@@ -116,6 +121,7 @@ def reflection_service(name: str, last_question: bool, question: str, answer: st
             Nama Siswa: {name}
             """
         system_prompt = reflection_prompt(is_last_question=last_question)
+        print(f"is Last Question? {last_question}")
         messages = [{"role": "system", "content": system_prompt}]
         if history:
             messages.extend(history)
@@ -165,9 +171,15 @@ def get_chat_completion(name: str, message: str, history: list = None, system_pr
     
 def lab_chat(name: str, message: str, lab: str, history: list = None) -> str:
     try:
-        system_prompt = lab_prompt(lab)
+        cached_answer = cache.get(message, lab)
+        if cached_answer is not None:
+            return Reflection.model_validate(cached_answer), 0, 0, 0
+        
+        intent = classify_intent(message, client)
+        needs_lab_guide = (intent == Intent.LAB)
+        
+        system_prompt = lab_prompt(lab, include_lab_guide=needs_lab_guide)
         contents = f"""
-            Nama Siswa: {name}
             pertanyaan: {message}
             """
 
@@ -185,7 +197,14 @@ def lab_chat(name: str, message: str, lab: str, history: list = None) -> str:
         parsed = response.output_parsed
         if parsed is None:
             raise ValueError("Model returned unparseable response")
-        print(f"📊 Tokens used - Input: {response.usage.input_tokens}, Output: {response.usage.output_tokens}, Total: {response.usage.input_tokens + response.usage.output_tokens}")
+        
+        cache.set(message, lab, parsed.model_dump())
+        print(
+            f"📊 Tokens — Input: {response.usage.input_tokens}, "
+            f"Output: {response.usage.output_tokens}, "
+            f"Total: {response.usage.input_tokens + response.usage.output_tokens} "
+            f"| Intent: {intent.value} | Lab guide: {'✅' if needs_lab_guide else '❌'}"
+        )
         return parsed, response.usage.input_tokens, response.usage.output_tokens, response.usage.input_tokens + response.usage.output_tokens
     except Exception as e:
         return f"Error occured - {e}"
