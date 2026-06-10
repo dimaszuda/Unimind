@@ -85,12 +85,13 @@ export default function LevelTiga() {
   const ballMovement = {
     transform: laserActive
       ? (laserDirection === 'right'
-          ? `translateX(13px)`
-          : `translateX(-13px)`)
+          ? `translateX(${laserDistance ? laserDistance/20 : 0}px)`
+          : `translateX(-${laserDistance ? laserDistance/20 : 0}px)`)
       : 'translateX(0)',
     transition: 'transform 5s ease',
   }
 
+  console.log(laserDistance/20)
   const moveSignSrc = directionSign === 'right'
     ? '/assets/move_right.png'
     : '/assets/move_left.png'
@@ -307,7 +308,7 @@ export default function LevelTiga() {
             src={statifSrc}
             alt="tool statif"
             width={200}
-            className='z-0 -mt-56 -mr-[167px]'
+            className='z-0 -mt-56 -mr-[162px]'
             style={{ transform: `translateX(-${statifTranslateX}px)` }}
           />
           

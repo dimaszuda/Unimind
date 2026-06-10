@@ -82,11 +82,12 @@ export default function LevelDua() {
   const ballMovement = {
     transform: laserActive
       ? (laserDirection === 'right'
-          ? `translateX(10px)`
-          : `translateX(-10px)`)
+          ? `translateX(${laserDistance ? laserDistance/5: 0}px)`
+          : `translateX(-${laserDistance ? laserDistance/5: 0}px)`)
       : 'translateX(0)',
     transition: 'transform 5s ease',
   }
+  console.log(laserDistance/5)
 
   const moveSignSrc = directionSign === 'right'
     ? '/assets/move_right.png'
